@@ -66,45 +66,31 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 
 app.post('/api/persons', (request, response) => {
-
     const body = request.body
 
-    if (!body.name) {
+    if (!body.name || !body.number) {
         return response.status(400).json({
-            error: 'name missing'
-        })
-    }
-    if (!body.number) {
-        return response.status(400).json({
-            error: 'number missing'
+            error: 'name and number are required'
         })
     }
 
-    // Verificar si el nombre ya existe en la base de datos
-    Person.findOne({ name: body.name })
-        .then(existingPerson => {
-            if (existingPerson) {
-                return response.status(400).json({
-                    error: 'name must be unique'
-                });
-            }
+    const person = new Person({
+        name: body.name,
+        number: body.number
+    })
 
-            const person = new Person({
-                name: body.name,
-                number: body.number
-            });
-
-            person.save().then(savedPerson => {
-                response.json(savedPerson);
-            });
+    person.save()
+        .then(savedPerson => {
+            response.json(savedPerson)
         })
         .catch(error => {
-            console.log(error.message);
-            response.status(500).json({ error: 'Internal Server Error' });
-        });
-
-
+            if (error.name === 'ValidationError') {
+                return response.status(400).json({ error: error.message })
+            }
+            return response.status(500).json({ error: 'Internal Server Error' })
+        })
 })
+
 
 app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body

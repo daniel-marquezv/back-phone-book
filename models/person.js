@@ -19,12 +19,14 @@ mongoose.connect(url)
     name: {
       type: String,
       unique: true,
-      required: true
+      required: true,
+      minlength: 3
+      
     },
     number: {
       type: String,
       required: true,
-      minlegth: 5
+      minlength: 8
     }
   });
 
